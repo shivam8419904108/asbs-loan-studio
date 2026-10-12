@@ -70,7 +70,49 @@ def main():
   cs=st.columns(6)
   for c,(k,v) in zip(cs,[('Initial EMI',ctl['initial_emi']),('Total Interest',ctl['total_interest']),('Part Payments',ctl['total_prepayment']),('Principal Variance',ctl['principal_variance']),('Payoff',ctl['payoff_date'].strftime('%d-%m-%Y')),('Control',ctl['status'])]):c.metric(k,f'₹{v:,.2f}' if isinstance(v,(int,float)) else v)
   df=pd.DataFrame([{'EMI #':r.emi_no,'Due Date':r.due_date,'Opening Principal':r.opening_principal,'ROI (% p.a.)':r.roi*100,'Interest Component':r.interest_component,'Principal Component':r.principal_component,'EMI':r.emi,'Part Prepayment':r.part_prepayment,'Closing Principal':r.closing_principal} for r in rows]).sort_values('EMI #').reset_index(drop=True)
-  st.dataframe(df,use_container_width=True,hide_index=True,column_config={'EMI #':st.column_config.NumberColumn(disabled=True),'Due Date':st.column_config.DateColumn(format='DD-MM-YYYY',disabled=True)},disabled=True)
+  st.dataframe(
+    df,
+    use_container_width=True,
+    hide_index=True,
+    column_config={
+        "EMI #": st.column_config.NumberColumn(
+            "EMI #",
+            format="%d"
+        ),
+        "Due Date": st.column_config.DateColumn(
+            "Due Date",
+            format="DD-MM-YYYY"
+        ),
+        "Opening Principal": st.column_config.NumberColumn(
+            "Opening Principal",
+            format="₹ %.2f"
+        ),
+        "ROI (% p.a.)": st.column_config.NumberColumn(
+            "ROI (% p.a.)",
+            format="%.3f%%"
+        ),
+        "Interest Component": st.column_config.NumberColumn(
+            "Interest Component",
+            format="₹ %.2f"
+        ),
+        "Principal Component": st.column_config.NumberColumn(
+            "Principal Component",
+            format="₹ %.2f"
+        ),
+        "EMI": st.column_config.NumberColumn(
+            "EMI",
+            format="₹ %.2f"
+        ),
+        "Part Prepayment": st.column_config.NumberColumn(
+            "Part Prepayment",
+            format="₹ %.2f"
+        ),
+        "Closing Principal": st.column_config.NumberColumn(
+            "Closing Principal",
+            format="₹ %.2f"
+        ),
+    },
+)
   pdf=build(LOGO,borrower,ref,principal,pre,ctl,rows);xlsx=build_excel(payload,pre,ctl,rows,st.session_state.roi,st.session_state.pp);a,b,c=st.columns(3);a.download_button('Download PDF',pdf,f'{name}.pdf','application/pdf',use_container_width=True);b.download_button('Download Excel',xlsx,f'{name}.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',use_container_width=True)
   if c.button('Save Case',use_container_width=True):
    with con() as db:
