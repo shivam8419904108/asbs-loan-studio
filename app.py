@@ -33,9 +33,46 @@ def emi_page():
     st.markdown('<div class="hero"><h1>EMI Calculator</h1><p>Enter any three values. Annual basis is fixed at 365 days.</p></div>',unsafe_allow_html=True)
     target=st.selectbox('Calculate',['EMI','Principal','Tenure','ROI'])
     with st.form('ec'):
-        a,b=st.columns(2);p=a.number_input('Loan Principal (₹)',0.0,5451215.0,10000.0,disabled=target=='Principal');n=b.number_input('Tenure (months)',0,600,45,1,disabled=target=='Tenure')
-        a,b=st.columns(2);roi=a.number_input('ROI (% p.a.)',0.0,100.0,8.75,.01,disabled=target=='ROI');emi=b.number_input('EMI (₹)',0.0,0.0,1000.0,disabled=target=='EMI');st.caption('Regular basis: 30 days | Annual basis: 365 days only')
-        go=st.form_submit_button('Calculate',type='primary',use_container_width=True)
+        a, b = st.columns(2)
+        p = a.number_input(
+            'Loan Principal (₹)',
+            min_value=0.0,
+            max_value=1_000_000_000_000.0,
+            value=5_451_215.0,
+            step=10_000.0,
+            disabled=target == 'Principal',
+        )
+        n = b.number_input(
+            'Tenure (months)',
+            min_value=0,
+            max_value=600,
+            value=45,
+            step=1,
+            disabled=target == 'Tenure',
+        )
+        a, b = st.columns(2)
+        roi = a.number_input(
+            'ROI (% p.a.)',
+            min_value=0.0,
+            max_value=100.0,
+            value=8.75,
+            step=0.01,
+            disabled=target == 'ROI',
+        )
+        emi = b.number_input(
+            'EMI (₹)',
+            min_value=0.0,
+            max_value=1_000_000_000_000.0,
+            value=0.0,
+            step=1_000.0,
+            disabled=target == 'EMI',
+        )
+        st.caption('Regular basis: 30 days | Annual basis: 365 days only')
+        go = st.form_submit_button(
+            'Calculate',
+            type='primary',
+            use_container_width=True,
+        )
     if go:
         try:st.session_state.emi_result=solve_missing(target,p,int(n),roi,emi)
         except Exception as x:st.error(str(x))
