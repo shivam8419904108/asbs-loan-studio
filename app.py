@@ -117,7 +117,7 @@ def schedule_page(client,user):
         if c.button('Save Case'):
             record={'user_id':user.id,'case_name':name,'borrower':borrower,'loan_reference':ref,'payload':payload}
             try:client.table('loan_cases').insert(record).execute();st.success('Saved online. It will appear on every device.')
-            except Exception as x:st.error(f'Save failed. Run setup.sql in Supabase first. {x}')
+            except Exception as x:st.error(f"Save failed: {x}")
 def saved_page(client,user):
     st.header('Saved Cases')
     try:items=client.table('loan_cases').select('*').eq('user_id',user.id).order('updated_at',desc=True).execute().data
@@ -135,6 +135,34 @@ def main(client):
     elif st.session_state.page=='Repayment Schedule':schedule_page(client,user)
     elif st.session_state.page=='Saved Cases':saved_page(client,user)
     else:st.header('Profile');st.write(user.email);st.caption('Supabase account works across devices.')
-client=sb()
-if 'auth' not in st.session_state:auth_page(client)
-else:main(client)
+client = sb()
+
+# Streamlit creates a new Supabase client after every rerun.
+# Restore the signed-in user's tokens so Supabase RLS can identify the user.
+if "auth" in st.session_state:
+    try:
+        current_session = st.session_state.auth.session
+
+        if (
+            current_session
+            and current_session.access_token
+            and current_session.refresh_token
+        ):
+            restored_auth = client.auth.set_session(
+                current_session.access_token,
+                current_session.refresh_token,
+            )
+
+            # Keep the latest refreshed session in Streamlit session state.
+            if restored_auth and restored_auth.session:
+                st.session_state.auth = restored_auth
+
+    except Exception:
+        st.session_state.pop("auth", None)
+        st.warning("Your secure session expired. Please sign in again.")
+        st.rerun()
+
+if "auth" not in st.session_state:
+    auth_page(client)
+else:
+    main(client)
