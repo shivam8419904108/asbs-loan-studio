@@ -167,7 +167,7 @@ def open_case(case):
 
     # Rebuild and show the complete saved calculation immediately.
     st.session_state.schedule_result = calculation_from_payload(payload)
-    st.session_state.nav_page = "Repayment Schedule"
+    st.session_state.pending_nav_page = "Repayment Schedule"
 
 
 def auth_page(sb):
@@ -424,6 +424,9 @@ def saved_cases_page(sb, user):
 
 
 def main(sb):
+    # Apply requested navigation before the radio widget is created.
+    if "pending_nav_page" in st.session_state:
+        st.session_state.nav_page = st.session_state.pop("pending_nav_page")
     st.session_state.setdefault("nav_page", "EMI Calculator")
     st.session_state.setdefault("roi_events", [])
     st.session_state.setdefault("pp_events", [])
